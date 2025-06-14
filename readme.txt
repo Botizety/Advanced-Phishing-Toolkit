@@ -1,39 +1,40 @@
-# Advanced Phishing Toolkit & Reverse Proxy Server
+# Project Chimera: A Journey into Building a Real-Time Phishing Proxy
 
-### 🔴 Important Ethical Disclaimer
-**This project was developed for educational purposes only.** It is a tool intended for security professionals and students to understand the mechanics of advanced phishing attacks and reverse proxying. Do not use this tool against any system or website that you do not own or have explicit, written permission to test. The author is not responsible for any misuse of this software.
+Hi there! My name is Kittipat, and I'm a final-year Computer Engineering and Cyber Security student at SIIT.
 
----
+I've always been fascinated by how modern, secure websites defend themselves. I wanted to go beyond theory and actually build the tools used in penetration testing to truly understand how these defenses work from the inside out. This project is the result of that journey.
 
-## Project Summary
+## What is This Project?
 
-This project is a standalone reverse proxy server, built in Python and Flask, designed to simulate advanced phishing campaigns. It can clone dynamic, JavaScript-rendered websites in real-time by proxying live traffic, rewriting HTML content on the fly to capture form submissions. This tool effectively demonstrates how modern phishing attacks can bypass simple defenses by acting as a man-in-the-middle, serving live content from the target site to the user.
+At its core, Project Chimera is a standalone web server I wrote in Python using the Flask framework. When you give it a target website (like a login page), it doesn't just make a static copy. It acts as a live, invisible middleman—a reverse proxy.
 
-## Key Features
+It fetches the real website's content on the fly, intelligently rewrites the page's links and forms to point back to itself, and then serves that modified page to a user. The goal is to do this so seamlessly that even dynamic, JavaScript-heavy sites continue to function, all while allowing me to intercept the data submitted in login forms for security research.
 
-- **Standalone Reverse Proxy:** Runs as a single Flask application, requiring no complex setup.
-- **Live Content Serving:** Fetches and serves content directly from the target site in real-time.
-- **Dynamic HTML Rewriting:** Uses BeautifulSoup to parse live HTML and rewrite links, image sources, and form actions to keep the user within the proxy environment.
-- **Credential Capture:** Intercepts `POST` requests from login forms and logs captured data to a local text file.
-- **Publicly Deployable:** Can be easily exposed to the public internet for realistic testing scenarios using `ngrok`.
+## The Journey: From a Simple Script to a Full-Fledged Proxy
 
-## The Development Journey & Challenges Overcome
+This project was a huge learning experience, and it evolved a lot as I hit the same defensive walls that real-world attackers face.
 
-The development of this tool was an iterative process that involved diagnosing and bypassing multiple layers of modern web application security.
+* **It started with a simple idea:** Could I clone a login page with a basic Python script? I first tried using the `requests` and `BeautifulSoup` libraries. This worked on simple, old websites, but I quickly hit my first major roadblock: modern applications like Steam or GitHub are built with JavaScript. My script just saw a blank, empty shell because it couldn't render the page like a real browser.
 
-- **Initial Failure:** An early version using simple `requests` and `BeautifulSoup` to create a static clone failed against modern targets like Steam, because their login pages are rendered dynamically with JavaScript.
+* **Discovering Real-World Defenses:** This failure led me down a rabbit hole of research. To solve the JavaScript problem, I learned how to use professional-grade tools like `mitmproxy` to intercept live HTTPS traffic. This was a breakthrough! But it immediately exposed me to the next layer of security. I ran into:
+    * **HSTS (HTTP Strict Transport Security):** A browser security policy that completely blocks you from ignoring certificate warnings. I had to learn the specific bypasses that security testers use to get around this in a controlled lab environment.
+    * **Server-Side Anti-Bot Systems:** When I targeted major platforms like Facebook, I discovered my tool was being trapped in endless redirect loops. I learned that their servers are smart enough to detect non-human requests and send them on a wild goose chase.
 
-- **Advanced Interception:** To overcome this, the project was re-architected into a **Man-in-the-Middle (MITM)** tool using `mitmproxy`. This allowed for the interception of live traffic and the injection of custom JavaScript to hijack form submission events.
+* **The Final Architecture:** All these challenges forced me to abandon simple cloning and build the final version of this tool: a standalone reverse proxy. It's smarter, handles redirects, and is a much more realistic simulation of a sophisticated phishing tool.
 
-- **Diagnosing Real-World Defenses:** While testing with `mitmproxy`, several professional-grade security features were encountered and analyzed:
-    - **HTTP Strict Transport Security (HSTS):** A browser-level security policy that prevents users from ignoring certificate warnings. This required learning specific browser bypass techniques used by security testers.
-    - **Server-Side Anti-Botting:** Sophisticated targets like Facebook were found to use redirect loops to trap and block non-browser traffic, demonstrating the limitations of script-based requests.
+## Core Features
 
-- **Final Architecture:** The final version is a standalone Flask application that acts as its own reverse proxy. This architecture provides the most stable and portable solution, successfully cloning medium-difficulty HTTPS sites like the GitHub login page in a real-world test scenario.
+-   **Standalone Server:** Runs as a single Python/Flask application.
+-   **Live Reverse Proxy:** Fetches and serves content from a live target in real-time.
+-   **Dynamic Content Rewriting:** Intelligently rewrites HTML links and form actions to keep the user within the proxy.
+-   **Credential Capture:** Intercepts form submissions and logs the data to a local text file.
+-   **Publicly Deployable:** Can be easily exposed to the internet for realistic testing using `ngrok`.
 
-## Setup and Usage
+## Tech Stack
 
-This project requires Python and the libraries listed in `requirements.txt`.
+Python | Flask | Requests | BeautifulSoup4 | ngrok | mitmproxy (for research)
+
+## Getting Started
 
 1.  **Clone the Repository:**
     ```bash
@@ -47,34 +48,25 @@ This project requires Python and the libraries listed in `requirements.txt`.
     python -m venv venv
     .\venv\Scripts\activate
 
-    # Install required libraries
+    # Install required libraries from requirements.txt
     pip install -r requirements.txt
     ```
 
-3.  **Configure the Target:**
-    * Open `app.py` and modify the `TARGET_HOST` and `TARGET_PROTOCOL` variables to your desired test site.
-
-4.  **Run the Server:**
-    * In your first terminal, start the Flask application.
+3.  **Configure and Run the Server:**
+    * Open `app.py` and set the `TARGET_HOST` to the test site you want to clone.
+    * In your terminal, run the application:
     ```bash
     python app.py
     ```
 
-5.  **Expose to the Internet (Optional, for "real-world" testing):**
-    * In a second terminal, use `ngrok` to create a public URL for your local server.
+4.  **Make it Live (Optional):**
+    * In a second terminal, use `ngrok` to get a public URL.
     ```bash
     ngrok http 5000
     ```
-    * Use the public `https://...` URL provided by `ngrok` as your phishing link.
 
-6.  **Check Results:**
-    * Captured credentials will be saved to `captured_credentials.txt` in the project directory.
+## A Quick But Important Note on Ethics
 
-## Technologies Used
+I built this tool to learn about and understand security systems, not to cause harm. It is intended for educational use on systems you have explicit permission to test (like a virtual machine or a test website like `testphp.vulnweb.com`).
 
-- **Python**
-- **Flask**
-- **Requests**
-- **BeautifulSoup4**
-- **ngrok**
-- **mitmproxy** (for research and development)
+Please, do not use this tool or its concepts for any malicious purpose. Let's use our skills to build and protect.
